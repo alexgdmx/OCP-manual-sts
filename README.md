@@ -119,7 +119,7 @@ The pod has 3 requirements:
 2. Mount a volume with the secret generated after create the CredentialsRequest
 3. Mount the service account token with the audience **openshift**
 
-    ```
+```
 apiVersion: v1
 kind: Pod
 metadata:
@@ -248,7 +248,7 @@ What happened here?. The aws-cli in the background try 3 tasks
 2. Try to get the role from the metadata from http://169.254.169.254/latest/meta-data/ if is not possible
 3. At the end based on the file in ~/.aws/config (see below) try to assume the role provided with the to env variables we set in the pod; regions and session name
 
-    ```
+```
 [root@bastion ~]# cat /root/.aws/config
 [default]
 role_arn = arn:aws:iam::0987654321:role/prefix-role-manual-sts-manual-sts
@@ -430,6 +430,3 @@ After deploying the pod, the annotations in the service account with the aws-pod
           expirationSeconds: 86400
           path: token
 ```
-
-
-.
