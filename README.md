@@ -1,9 +1,9 @@
-# Running pods in Openshift with AWS IAM Roles for service accounts a.k.a. IRSA
+# Running pods in OpenShift with AWS IAM Roles for service accounts aka IRSA
 
 
 ## By: Alejandro Guadarrama Dominguez
 
-You can associate an IAM role with an Openshift service account. This Openshift service account can then be used to run a pod providing AWS permissions to the containers. With this feature pods on Openshift can call AWS APIs.
+You can associate an IAM role with an OpenShift service account. This OpenShift service account can then be used to run a pod providing AWS permissions to the containers. With this feature pods on OpenShift can call AWS APIs.
 
 Pod applications must sign their AWS API requests with AWS Security Token Service (AWS STS) as a web service that enables you to request temporary, limited-privilege credentials for AWS Identity and Access Management (IAM). This feature provides a strategy for managing credentials for your applications. The applications in the pod’s containers can then use an AWS SDK or the AWS CLI to make API requests to authorized AWS services.
 
@@ -12,10 +12,10 @@ The IAM roles for service accounts feature provides the following benefits:
 
 
 * **Least privilege** — By using the IAM roles for service accounts feature, you no longer need to provide extended permissions to the node IAM role so that pods on that node can call AWS APIs. You can scope IAM permissions to a service account, and only pods that use that service account have access to those permissions.
-* **Credential isolation** — A container can only retrieve credentials for the IAM role that is associated with the Openshift service account and namespace to which it belongs. A container never has access to credentials that are intended for another container that belongs to another pod or namespace.
+* **Credential isolation** — A container can only retrieve credentials for the IAM role that is associated with the OpenShift service account and namespace to which it belongs. A container never has access to credentials that are intended for another container that belongs to another pod or namespace.
 * **Auditability** — Access and event logging is available through AWS CloudTrail to help ensure retrospective auditing.
 
-To enable the use of IAM Roles for Openshift service accounts you should configure an AWS cluster in manual mode to use Amazon Web Services Secure Token Service (AWS STS). With this configuration, the CCO uses temporary credentials for different components.
+To enable the use of IAM Roles for OpenShift service accounts you should configure an AWS cluster in manual mode to use Amazon Web Services Secure Token Service (AWS STS). With this configuration, the CCO uses temporary credentials for different components.
 
 
 ![alt_text](images/image1.png "image_tooltip")
@@ -25,12 +25,12 @@ To deploy a cluster with CCO in manual mode with STS you can check the documenta
 
 
 
-# Prepare IAM roles and link with Openshift service accounts
+# Prepare IAM roles and link with OpenShift service accounts
 
 
 # Option 1: using ccoctl tool
 
-This is an example of a **CredentialsRequest** resource to create any role to use for an Openshift service account.
+This is an example of a **CredentialsRequest** resource to create any role to use for an OpenShift service account.
 
 
 ```yaml
@@ -59,7 +59,7 @@ spec:
 ```
 
 
-It's very important to create the role with the **ccoctl** tool, this step is to create the IAM role and link internally to the Openshift service account and namespace. Once it is created the IAM role can be modified by adding or removing permissions in AWS IAM Console. Also running aws iam commands, or using an automation tool like ansible or terraform.
+It's very important to create the role with the **ccoctl** tool, this step is to create the IAM role and link internally to the OpenShift service account and namespace. Once it is created the IAM role can be modified by adding or removing permissions in AWS IAM Console. Also running aws iam commands, or using an automation tool like ansible or terraform.
 
 The **ccoctl** tool can create one or more CredentialsRequest, the tool receives a folder as parameter and processes all the CredentialsRequest yaml files in the folder, in this case we save the file in the **credrequests** folder.
 
@@ -74,7 +74,7 @@ The **ccoctl** tool can create one or more CredentialsRequest, the tool receives
 ```
 
 
-The command above will create a file or files with an Openshift secret to being applied in the namespace. The identity provider is the value in the pre installation tasks, or you can get in the amazon console IAM -> Identity providers.
+The command above will create a file or files with an OpenShift secret to being applied in the namespace. The identity provider is the value in the pre installation tasks, or you can get in the amazon console IAM -> Identity providers.
 
 outputs/manual-sts-manual-sts-credentials.yaml.
 
@@ -300,7 +300,7 @@ The ccoctl tool, as you can see, helps to create the AWS IAM Roles one or multip
 
 
 * Other area: create AWS IAM Roles
-* Openshift: create service accounts and pods
+* OpenShift: create service accounts and pods
 
 On the side of AWS we create the role and modify the “trust policy” to allow the pod service account to use it. And attach the policy role with the desired permissions to grant to the role.
 
