@@ -33,7 +33,7 @@ To deploy a cluster with CCO in manual mode with STS you can check the documenta
 This is an example of a **CredentialsRequest** resource to create any role to use for an Openshift service account.
 
 
-```
+```yaml
 apiVersion: cloudcredential.openshift.io/v1
 kind: CredentialsRequest
 metadata:
@@ -79,7 +79,7 @@ The command above will create a file or files with an Openshift secret to being 
 outputs/manual-sts-manual-sts-credentials.yaml.
 
 
-```
+```yaml
 apiVersion: v1
 stringData:
   credentials: |-
@@ -119,7 +119,7 @@ The pod has 3 requirements:
 2. Mount a volume with the secret generated after create the CredentialsRequest
 3. Mount the service account token with the audience **openshift**
 
-```
+```yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -210,7 +210,7 @@ total 4
 
 
 
-```
+```json
 {
   "Credentials": {
     "AccessKeyId": "FAKEKEYID",
@@ -271,7 +271,7 @@ Or we can run the command **aws iam  assume-role-with-web-identity**, it is the 
 
 
 
-```
+```json
 {
     "Credentials": {
         "AccessKeyId": "FAKEKEYID",
@@ -305,7 +305,7 @@ The ccoctl tool, as you can see, helps to create the AWS IAM Roles one or multip
 On the side of AWS we create the role and modify the “trust policy” to allow the pod service account to use it. And attach the policy role with the desired permissions to grant to the role.
 
 
-```
+```json
 {
  "Version": "2012-10-17",
  "Statement": [
@@ -332,7 +332,7 @@ On the side of AWS we create the role and modify the “trust policy” to allow
 The service account requires some annotations as you can see below, necessary for the webhook to set some environment variables inside the pod in an automatic way.
 
 
-```
+```yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -356,7 +356,7 @@ metadata:
 ## **Creating the pod**
 
 
-```
+```yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -385,13 +385,6 @@ spec:
       requests:
         cpu: 100m
         memory: 512Mi
-    volumeMounts:
-    - mountPath: /var/run/secrets/cloud
-      name: manual-sts
-      readOnly: false
-    - mountPath: /var/run/secrets/openshift/serviceaccount
-      name: bound-sa-token
-      readOnly: true
   dnsPolicy: ClusterFirst
   serviceAccount: sa-manual-sts #<--The pod must run with the sa
   serviceAccountName: sa-manual-sts
@@ -402,10 +395,10 @@ spec:
  \
 
 
-After deploying the pod, the annotations in the service account with the aws-pod-identity-webhook, will inject the following **env: variables **merging with the existing ones and the **volume** and **volumeMounts **necessary to **AssumeRoleWithWebIdentity.**
+After deploying the pod, the annotations in the service account with the **aws-pod-identity-webhook**, will inject the following **env: variables** merging with the existing ones and the **volume** and **volumeMounts** necessary to **AssumeRoleWithWebIdentity.**
 
 
-```
+```yaml
 
     env:
     - name: AWS_DEFAULT_REGION
