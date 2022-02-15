@@ -3,25 +3,21 @@
 
 ## By: Alejandro Guadarrama Dominguez
 
-You can associate an IAM role with an OpenShift service account. This OpenShift service account can then be used to run a pod providing AWS permissions to the containers. With this feature pods on OpenShift can call AWS APIs.
+You can associate an IAM role with an OpenShift service account. This OpenShift service account can then be used to run a pod providing AWS permissions to the containers. With this feature, pods on OpenShift can call AWS APIs.
 
 Pod applications must sign their AWS API requests with AWS Security Token Service (AWS STS) as a web service that enables you to request temporary, limited-privilege credentials for AWS Identity and Access Management (IAM). This feature provides a strategy for managing credentials for your applications. The applications in the pod’s containers can then use an AWS SDK or the AWS CLI to make API requests to authorized AWS services.
 
 The IAM roles for service accounts feature provides the following benefits:
 
-
-
 * **Least privilege** — By using the IAM roles for service accounts feature, you no longer need to provide extended permissions to the node IAM role so that pods on that node can call AWS APIs. You can scope IAM permissions to a service account, and only pods that use that service account have access to those permissions.
 * **Credential isolation** — A container can only retrieve credentials for the IAM role that is associated with the OpenShift service account and namespace to which it belongs. A container never has access to credentials that are intended for another container that belongs to another pod or namespace.
 * **Auditability** — Access and event logging is available through AWS CloudTrail to help ensure retrospective auditing.
 
-To enable the use of IAM Roles for OpenShift service accounts you should configure an AWS cluster in manual mode to use Amazon Web Services Secure Token Service (AWS STS). With this configuration, the CCO uses temporary credentials for different components.
-
+To enable the use of IAM Roles for OpenShift service accounts, you should configure an AWS cluster in manual mode to use Amazon Web Services Secure Token Service (AWS STS). With this configuration, the CCO uses temporary credentials for different components.
 
 ![alt_text](images/image1.png "image_tooltip")
 
-
-To deploy a cluster with CCO in manual mode with STS you can check the documentation [https://docs.openshift.com/container-platform/4.8/authentication/managing_cloud_provider_credentials/cco-mode-sts.html](https://docs.openshift.com/container-platform/4.8/authentication/managing_cloud_provider_credentials/cco-mode-sts.html). This blog doesn’t show how to do that. We will focus on how to use the feature to run pods with temporary, limited-privilege credentials provided by AWS STS.
+TTo deploy a cluster with CCO in manual mode with STS, you can check the documentation https://docs.openshift.com/container-platform/4.8/authentication/managing_cloud_provider_credentials/cco-mode-sts.html. This blog does not show how to do that. We will focus on how to use the feature to run pods with temporary, limited-privilege credentials provided by AWS STS.
 
 
 
@@ -30,7 +26,7 @@ To deploy a cluster with CCO in manual mode with STS you can check the documenta
 
 # Option 1: using ccoctl tool
 
-This is an example of a **CredentialsRequest** resource to create any role to use for an OpenShift service account.
+This is an example of a CredentialsRequest resource to create any role to use for an OpenShift service account.
 
 
 ```yaml
@@ -59,9 +55,9 @@ spec:
 ```
 
 
-It's very important to create the role with the **ccoctl** tool, this step is to create the IAM role and link internally to the OpenShift service account and namespace. Once it is created the IAM role can be modified by adding or removing permissions in AWS IAM Console. Also running aws iam commands, or using an automation tool like ansible or terraform.
+It is very important to create the role with the **ccoctl** tool. This step is to create the IAM role and link internally to the OpenShift service account and namespace. Once it is created, the IAM role can be modified by adding or removing permissions in AWS IAM Console, running AWS IAM commands, or using an automation tool like Ansible or Terraform.
 
-The **ccoctl** tool can create one or more CredentialsRequest, the tool receives a folder as parameter and processes all the CredentialsRequest yaml files in the folder, in this case we save the file in the **credrequests** folder.
+The **ccoctl** tool can create one or more CredentialsRequest. The tool receives a folder as parameter and processes all the CredentialsRequest yaml files in the folder. In this case, we save the file in the **credrequests** folder.
 
 
 ```
@@ -74,7 +70,7 @@ The **ccoctl** tool can create one or more CredentialsRequest, the tool receives
 ```
 
 
-The command above will create a file or files with an OpenShift secret to being applied in the namespace. The identity provider is the value in the pre installation tasks, or you can get in the amazon console IAM -> Identity providers.
+The command above will create a file or files with an OpenShift secret being applied in the namespace. The identity provider is the value in the pre-installation tasks, or you can get in the amazon console IAM -> Identity providers.
 
 outputs/manual-sts-manual-sts-credentials.yaml.
 
@@ -93,27 +89,21 @@ metadata:
 type: Opaque
 ```
 
-
-Also, we need to create the service(s) account(s) in the namespace
-
+Also, we need to create the service(s) account(s) in the namespace.
 
 ```
 [root@bastion ~]# oc create sa sa-manual-sts
 ```
 
-
-
 # How to assume the role
 
-The below is an example of a POD running the **aws-cli **to test **aws sts assume-role-with-web-identity**,
+Below is an example of a POD running the **aws-cli** to test **aws sts assume-role-with-web-identity**.
 
-The pod is placing the credentials in the file** /root/.aws/config** and setting 2 environment variables  AWS_ROLE_SESSION_NAME and AWS_REGION.
+The pod is placing the credentials in the file **/root/.aws/** config and setting 2 environment variables  AWS_ROLE_SESSION_NAME and AWS_REGION.
 
 This example is not mounting directly the volume with the config file, because the path **/root/.aws** must be **writable** to let the aws-cli create the folder **/root/.aws/cli/cache** and store the temporary credentials if you are running aws-cli commands directly.
 
 The pod has 3 requirements:
-
-
 
 1. Run with the service account in the CredentialsRequest
 2. Mount a volume with the secret generated after create the CredentialsRequest
@@ -174,12 +164,7 @@ spec:
           path: token
 ```
 
-
-
-
-
-With the** /root/.aws/config** in the pod file we can run any AWS command, the client will request the assume role in the background, and will create the temporary credentials in the directory **/root/.aws/cli/cache**
-
+With the **/root/.aws/config** in the pod file, we can run any AWS command, The client will request the assume role in the background and will create the temporary credentials in the directory **/root/.aws/cli/cache**
 
 ```
 [root@bastion ~]# ls -l /root/.aws/
@@ -239,14 +224,11 @@ total 4
 }
 ```
 
-
-What happened here?. The aws-cli in the background try 3 tasks
-
-
-
+What happened here? The aws-cli in the background tried 3 tasks:
 1. Try to find the ~/.aws./credentials file if is not possible
-2. Try to get the role from the metadata from http://169.254.169.254/latest/meta-data/ if is not possible
-3. At the end based on the file in ~/.aws/config (see below) try to assume the role provided with the to env variables we set in the pod; regions and session name
+1. Try to get the role from the metadata from http://169.254.169.254/latest/meta-data/ if is not possible
+1. At the end, based on the file in ~/.aws/config (see below), aws-cli try to assume the role provided in combination with the environment variables that we set in the pod; AWS_REGION and AWS_ROLE_SESSION_NAME
+
 
 ```
 [root@bastion ~]# cat /root/.aws/config
@@ -254,10 +236,7 @@ What happened here?. The aws-cli in the background try 3 tasks
 role_arn = arn:aws:iam::0987654321:role/prefix-role-manual-sts-manual-sts
 ```
 
-
-
-Or we can run the command **aws iam  assume-role-with-web-identity**, it is the similar behavior when you use any language SDK, like boto3 in python.
-
+Another option is run the command **aws iam assume-role-with-web-identity**. It is the similar behavior when you use any language SDK, like boto3 in Python.
 
 ```
 [root@bastion]# TOKEN=$(cat /var/run/secrets/openshift/serviceaccount/token)
@@ -268,8 +247,6 @@ Or we can run the command **aws iam  assume-role-with-web-identity**, it is the 
   --web-identity-token $TOKEN \
   --duration-seconds 900
 ```
-
-
 
 ```json
 {
@@ -289,21 +266,14 @@ Or we can run the command **aws iam  assume-role-with-web-identity**, it is the 
 }
 ```
 
-
-As you can see from the example above, it is very easy and transparent how to use the IAM roles to call AWS services from a pod using the CCO in manual mode with STS.
-
-
 # Option 2: using aws-pod-identity-webhook
 
-The ccoctl tool, as you can see, helps to create the AWS IAM Roles one or multiples with one only line of code. In cases where another area is responsible to manage the AWS IAM Roles we can split the process.
-
-
+The ccoctl tool, as you can see, helps to create the AWS IAM Roles one or multiples with only one line of code. In cases where another area is responsible to manage the AWS IAM Roles, we can split the process.
 
 * Other area: create AWS IAM Roles
 * OpenShift: create service accounts and pods
 
-On the side of AWS we create the role and modify the “trust policy” to allow the pod service account to use it. And attach the policy role with the desired permissions to grant to the role.
-
+On the side of AWS, we create the role and modify the “trust policy” to allow the pod service account to use it and attach the policy role to grant the desired permissions to the role.
 
 ```json
 {
@@ -325,12 +295,9 @@ On the side of AWS we create the role and modify the “trust policy” to allow
 }
 ```
 
-
-
 ## **Create the service account**
 
-The service account requires some annotations as you can see below, necessary for the webhook to set some environment variables inside the pod in an automatic way.
-
+The service account requires some annotations, as you can see below, which is necessary for the webhook to set some environment variables inside the pod in an automatic way.
 
 ```yaml
 apiVersion: v1
@@ -349,9 +316,8 @@ metadata:
     #   Note: This value can be overwritten if specified in the pod
     #         annotation as shown in the next step.
     eks.amazonaws.com/token-expiration: "86400"
+    # the minimum time is 15 minutes "900"
 ```
-
-
 
 ## **Creating the pod**
 
@@ -391,11 +357,7 @@ spec:
 
 ```
 
-
- \
-
-
-After deploying the pod, the annotations in the service account with the **aws-pod-identity-webhook**, will inject the following **env: variables** merging with the existing ones and the **volume** and **volumeMounts** necessary to **AssumeRoleWithWebIdentity.**
+After deploying the pod, the annotations in the service account with the aws-pod-identity-webhook, will inject the following **env: variables** merging with the existing ones and the **volume** and **volumeMounts** necessary to **AssumeRoleWithWebIdentity**.
 
 
 ```yaml
@@ -423,3 +385,5 @@ After deploying the pod, the annotations in the service account with the **aws-p
           expirationSeconds: 86400
           path: token
 ```
+
+As you can see from the two examples above, it is very easy and transparent to use the IAM roles to call AWS services from a pod using the CCO in manual mode with STS.
