@@ -19,6 +19,8 @@ To enable the use of IAM Roles for OpenShift service accounts, you should config
 
 TTo deploy a cluster with CCO in manual mode with STS, you can check the documentation https://docs.openshift.com/container-platform/4.8/authentication/managing_cloud_provider_credentials/cco-mode-sts.html. This blog does not show how to do that. We will focus on how to use the feature to run pods with temporary, limited-privilege credentials provided by AWS STS.
 
+**NOTE:** This procedure is intented for OpenShift Container Platform Cluster. For ROSA Clusters already have configured STS, using the [**Option 2**](#option-2-using-aws-pod-identity-webhook) 
+
 
 
 # Prepare IAM roles and link with OpenShift service accounts
